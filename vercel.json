@@ -25,6 +25,7 @@
     ],
     "env": {
         "APP_NAME": "MCQ App",
+        "APP_ENV": "production",
         "APP_DEBUG": "false",
         "APP_CONFIG_CACHE": "/tmp/config.php",
         "APP_EVENTS_CACHE": "/tmp/events.php",
