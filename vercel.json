@@ -36,6 +36,5 @@
         "LOG_CHANNEL": "stderr",
         "SESSION_DRIVER": "cookie",
         "VIEW_COMPILED_PATH": "/tmp"
-    },
-    "buildCommand": "composer install --no-dev --optimize-autoloader && npm install && npm run build"
+    }
 }
