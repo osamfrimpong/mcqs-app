@@ -6,23 +6,23 @@
         }
     },
     "routes": [
-        {
-            "src": "/build/(.*)",
-            "dest": "/public/build/"
-        },
-        {
-            "src": "/resources/(.*)",
-            "dest": "/public/resources/"
-        },
-        {
-            "src": "/favicon/(.*)",
-            "dest": "/public/favicon/"
-        },
-        {
-            "src": "/(.*)",
-            "dest": "/api/index.php"
-        }
-    ],
+    {
+        "src": "/build/(.*)",
+        "dest": "/public/build/$1"
+    },
+    {
+        "src": "/resources/(.*)",
+        "dest": "/public/resources/$1"
+    },
+    {
+        "src": "/favicon/(.*)",
+        "dest": "/public/favicon/$1"
+    },
+    {
+        "src": "/(.*)",
+        "dest": "/api/index.php"
+    }
+],
     "env": {
         "APP_NAME": "MCQ App",
         "APP_ENV": "production",
