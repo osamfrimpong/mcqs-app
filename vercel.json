@@ -7,6 +7,18 @@
     },
     "routes": [
     {
+        "src": "/build/(.*)",
+        "dest": "/public/build/$1"
+    },
+    {
+        "src": "/resources/(.*)",
+        "dest": "/public/resources/$1"
+    },
+    {
+        "src": "/favicon/(.*)",
+        "dest": "/public/favicon/$1"
+    },
+    {
         "src": "/(.*)",
         "dest": "/api/index.php"
     }
@@ -25,5 +37,6 @@
         "LOG_CHANNEL": "stderr",
         "SESSION_DRIVER": "cookie",
         "VIEW_COMPILED_PATH": "/tmp"
-    }
+    },
+    "outputDirectory": "build"
 }
