@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Score;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class ScoreController extends Controller
 {
@@ -12,7 +13,7 @@ class ScoreController extends Controller
      */
     public function index()
     {
-        //
+        return Inertia::render('dashboard/assessments/index');
     }
 
     /**

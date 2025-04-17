@@ -13,12 +13,12 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'Questions',
-        href: '/dashboard/tests',
+        href: route('dashboard.questions.index'),
         icon: Folder,
     },
     {
         title: 'Assessments',
-        href: '/dashboard/assessments',
+        href: route('dashboard.assessments'),
         icon: BookOpen,
     },
     {

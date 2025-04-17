@@ -2,11 +2,12 @@
 
 namespace App\Models;
 
+use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Model;
 
 class Score extends Model
 {
-    protected $fillable = ['user_id', 'score','question_id'];
+    protected $fillable = ['user_id', 'score','question_id','answers'];
 
     protected $table = 'scores';
 
@@ -28,5 +29,14 @@ class Score extends Model
     public function question()
     {
         return $this->belongsTo(Question::class);
+    }
+
+    protected static function boot()
+    {
+        parent::boot();
+        
+        static::creating(function ($model) {
+            $model->uuid = (string) Str::uuid();
+        });
     }
 }

@@ -1,41 +1,13 @@
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem } from '@/types';
-import { Head, Link } from '@inertiajs/react';
+import { type BreadcrumbItem, Question, Assessment, PageProps } from '@/types';
+import { Head, Link, usePage } from '@inertiajs/react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { PlusCircle, AlertCircle } from 'lucide-react';
-import { formatDistance } from 'date-fns';
+import { PlusCircle, AlertCircle, MoreHorizontal } from 'lucide-react';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 
-interface Assessment {
-  id: number;
-  title: string;
-  created_at: string;
-  questions_count: number;
-  status: string;
-}
-
-interface Question {
-  id: number;
-  content: string;
-  created_at: string;
-  type: string;
-}
-
-interface User {
-  id: number;
-  name: string;
-  email: string;
-}
-
-interface DashboardProps {
-  assessments: Assessment[];
-  questions: Question[];
-  auth: {
-    user: User;
-  };
-}
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
@@ -44,7 +16,14 @@ const breadcrumbs: BreadcrumbItem[] = [
   },
 ];
 
-export default function Dashboard({ assessments, questions, auth }: DashboardProps) {
+export default function Dashboard() {
+
+const { auth, assessments, questions } = usePage<PageProps & {
+  assessments: Assessment[];
+  questions: Question[];
+}>().props;
+
+
   const getGreeting = (): string => {
     const currentHour = new Date().getHours();
     if (currentHour < 12) return 'Good morning';
@@ -77,7 +56,7 @@ export default function Dashboard({ assessments, questions, auth }: DashboardPro
                 You haven't created any questions yet. Create your first test.
                 <div className="mt-4">
                   <Button asChild>
-                    <Link href="/questions/create">
+                    <Link href={route('dashboard.questions.create')}>
                       <PlusCircle className="mr-2 h-4 w-4" />
                       Add Question
                     </Link>
@@ -115,39 +94,65 @@ export default function Dashboard({ assessments, questions, auth }: DashboardPro
                 <CardDescription>You have {questions.length} questions in total</CardDescription>
               </div>
               <Button asChild variant="outline" size="sm">
-                <Link href="/questions">
+                <Link href={route('dashboard.questions.index')}>
                   View All
                 </Link>
               </Button>
             </CardHeader>
             <CardContent>
+            <div className="rounded-md border">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Content</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Created</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableHead>Title</TableHead>
+                    <TableHead>Created At</TableHead>
+                    <TableHead className="w-20">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {questions.slice(0, 5).map((question) => (
+                  {questions.map((question) => (
                     <TableRow key={question.id}>
-                      <TableCell className="font-medium">{question.content.length > 60 
-                        ? `${question.content.substring(0, 60)}...` 
-                        : question.content}
+                      <TableCell className="font-medium">{question.title}</TableCell>
+                      <TableCell>
+                        {new Date(question.created_at).toLocaleDateString()}
                       </TableCell>
-                      <TableCell>{question.type}</TableCell>
-                      <TableCell>{formatDistance(new Date(question.created_at), new Date(), { addSuffix: true })}</TableCell>
-                      <TableCell className="text-right">
-                        <Button asChild variant="ghost" size="sm">
-                          <Link href={`/questions/${question.id}/edit`}>Edit</Link>
-                        </Button>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                              <span className="sr-only">Open menu</span>
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem>
+                              <Link href={`/dashboard/questions/${question.uuid}`} className="w-full">
+                                View
+                              </Link>
+                            </DropdownMenuItem>
+                           <DropdownMenuItem>
+                              <Link href={`/dashboard/questions/${question.uuid}/answers`} className="w-full">
+                                Answers/Discuss
+                              </Link>
+                            </DropdownMenuItem> <DropdownMenuItem>
+                              <Link href={`/dashboard/questions/${question.uuid}/edit`} className="w-full">
+                                Edit
+                              </Link>
+                            </DropdownMenuItem>
+                            
+                            <DropdownMenuItem className="text-red-600">
+                              <Link href={`/dashboard/questions/${question.uuid}/delete`} className="w-full">
+                                Delete
+                              </Link>
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
+            </div>
             </CardContent>
           </Card>
         )}
@@ -177,7 +182,7 @@ export default function Dashboard({ assessments, questions, auth }: DashboardPro
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
-                <TableBody>
+                {/* <TableBody>
                   {assessments.slice(0, 5).map((assessment) => (
                     <TableRow key={assessment.id}>
                       <TableCell className="font-medium">{assessment.title}</TableCell>
@@ -198,7 +203,7 @@ export default function Dashboard({ assessments, questions, auth }: DashboardPro
                       </TableCell>
                     </TableRow>
                   ))}
-                </TableBody>
+                </TableBody> */}
               </Table>
             </CardContent>
           </Card>
