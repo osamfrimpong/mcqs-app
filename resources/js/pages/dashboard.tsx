@@ -177,17 +177,46 @@ export default function Dashboard() {
               </Button>
             </CardHeader>
             <CardContent>
-              <Table>
+            <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Title</TableHead>
-                    <TableHead>Questions</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Created</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableHead>Question</TableHead>
+                    <TableHead>Taken At</TableHead>
+                    <TableHead>Score</TableHead>
+                    <TableHead className="w-20">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
-                {/* Table body content would go here */}
+                <TableBody>
+                  {assessments.map((assessment) => (
+                    <TableRow key={assessment.id}>
+                      <TableCell className="font-medium">{assessment.question.title}</TableCell>
+                      <TableCell>
+                        {new Date(assessment.created_at).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell>
+                        {assessment.score}({Math.round((assessment.score / assessment.question.content.length) * 100)}%)
+                      </TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                              <span className="sr-only">Open menu</span>
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem>
+                              <Link href={`/dashboard/questions/${assessment.uuid}`} className="w-full">
+                                View
+                              </Link>
+                            </DropdownMenuItem>
+                            
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
               </Table>
             </CardContent>
           </Card>

@@ -15,7 +15,7 @@ export default function SearchAssessment({
     setAssessmentId: React.Dispatch<React.SetStateAction<string>>;
 }) {
     const [foundQuestion, setFoundQuestion] = React.useState<Question>();
-    const { data, setData, processing, errors } = useForm<Required<{ uuid: string }>>({
+    const { data, setData, processing } = useForm<Required<{ uuid: string }>>({
         uuid: assessmentId,
     });
 
@@ -29,7 +29,7 @@ export default function SearchAssessment({
                 setFoundQuestion(response.data);
             })
             .catch((error) => {
-                toast.error('Assessment not found!');
+                toast.error('Error!',{description: error.response.data.message});
             });
     };
 

@@ -20,6 +20,7 @@ class Question extends Model
         return 'uuid';
     }
 
+    protected $with = ['user'];
    
 
     public function user()

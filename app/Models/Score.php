@@ -15,7 +15,10 @@ class Score extends Model
         'score' => 'integer',
         'user_id' => 'integer',
         'question_id' => 'integer',
+        'answers' => 'array'
     ];
+
+    protected $with = ['question'];
 
     public function getRouteKeyName()
     {

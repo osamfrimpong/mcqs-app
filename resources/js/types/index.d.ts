@@ -63,11 +63,15 @@ export interface Question {
     duration: number;
 }
 
-export interface QuestionContent {
+interface QuestionContent {
     detail: string;
     number: number;
-    options: Record<string, string>[];
+    options: Option[];
     answer: string;
+}
+
+export interface Option {
+    [key: string]: string;
 }
 
 
@@ -79,7 +83,7 @@ export interface Assessment {
     score: number;
     created_at: string;
     updated_at: string;
-    answers: Record<string, unknown>;
+    answers: Option[];
 }
 
 

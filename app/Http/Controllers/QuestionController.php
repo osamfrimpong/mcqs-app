@@ -141,6 +141,10 @@ class QuestionController extends Controller
         $searchTerm = $request->input('uuid');
         $question = Question::with('user')->where('uuid', '=', $searchTerm)
             ->first();
+        if(is_null($question))
+        {
+            return response()->json(['message' => 'Question not found'], 404);
+        }
         return response()->json($question);
     }
 

@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use Inertia\Inertia;
 use App\Models\Score;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 
 class ScoreController extends Controller
 {
@@ -29,7 +31,28 @@ class ScoreController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'score' => 'required|integer',
+            'question_id' => 'required|exists:questions,id',
+            'answers' => 'required|array',
+        ]);
+        
+        $data = $request->all();
+        $data['user_id'] = Auth::id();
+        
+        try {
+            $score = Score::create($data);
+            return redirect()->back()->with('flash', [
+                'type' => 'success',
+                'message' => 'Assessment taken successfully'
+            ]);
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+            return redirect()->back()->withInput()->with('flash', [
+                'type' => 'error',
+                'message' => 'Could not save assessment, please try again later'
+            ]);
+        }
     }
 
     /**
