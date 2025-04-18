@@ -3,11 +3,21 @@ import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink } from '@/components/ui/pagination';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle
+} from "@/components/ui/alert-dialog";
 import AppLayout from '@/layouts/app-layout';
 import { FlashMessage, PaginatedData, Question, type BreadcrumbItem } from '@/types';
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { AlertCircle, MoreHorizontal, PlusCircle } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -24,8 +34,13 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function Questions() {
     const { questions, flashMessage } = usePage<{
         questions: PaginatedData<Question>;
-        flashMessage: FlashMessage
+        flashMessage: FlashMessage;
     }>().props;
+
+    // State for delete confirmation dialog
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [questionToDelete, setQuestionToDelete] = useState<Question | null>(null);
+    const [openMenuId, setOpenMenuId] = useState<number | null>(null);
 
     // Function to parse the HTML entities in pagination labels
     const parseLabel = (label: string) => {
@@ -33,13 +48,45 @@ export default function Questions() {
         if (label === 'Next &raquo;') return 'Next →';
         return label;
     };
-   
-    useEffect(() => {
-      if (flashMessage) {
-          toast.success('Success!', { description: flashMessage.message });
-      }
-  }, [flashMessage]);
 
+    // Function to handle delete confirmation
+    const handleDeleteClick = (question: Question) => {
+        setQuestionToDelete(question);
+        setDeleteDialogOpen(true);
+        // Close the dropdown menu when opening the dialog
+        setOpenMenuId(null);
+    };
+
+    // Function to execute delete
+    const confirmDelete = () => {
+        if (questionToDelete) {
+            router.delete(route('dashboard.questions.destroy', questionToDelete.uuid), {
+                onSuccess: () => {
+                    toast.success('Success!', { description: 'Question deleted successfully' });
+                },
+                onError: () => {
+                    toast.error('Error', { description: 'Failed to delete question' });
+                }
+            });
+        }
+        setDeleteDialogOpen(false);
+        setQuestionToDelete(null);
+    };
+
+    // Handle dialog closing
+    const handleDialogOpenChange = (open: boolean) => {
+        setDeleteDialogOpen(open);
+        if (!open) {
+            // Ensure dropdown is closed when dialog closes
+            setOpenMenuId(null);
+        }
+    };
+
+    useEffect(() => {
+        if (flashMessage) {
+            toast.success('Success!', { description: flashMessage.message });
+        }
+    }, [flashMessage]);
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -96,7 +143,12 @@ export default function Questions() {
                                             <TableCell className="font-medium">{question.title}</TableCell>
                                             <TableCell>{new Date(question.created_at).toLocaleDateString()}</TableCell>
                                             <TableCell>
-                                                <DropdownMenu>
+                                                <DropdownMenu 
+                                                    open={openMenuId === question.id}
+                                                    onOpenChange={(open) => {
+                                                        setOpenMenuId(open ? question.id : null);
+                                                    }}
+                                                >
                                                     <DropdownMenuTrigger asChild>
                                                         <Button variant="ghost" className="h-8 w-8 p-0">
                                                             <span className="sr-only">Open menu</span>
@@ -110,19 +162,20 @@ export default function Questions() {
                                                             </Link>
                                                         </DropdownMenuItem>
                                                         <DropdownMenuItem>
-                                                            <Link href={`/dashboard/questions/${question.uuid}/answers`} className="w-full">
+                                                            <Link href={route('dashboard.questions.answers', question.uuid)} className="w-full">
                                                                 Answers/Discuss
                                                             </Link>
-                                                        </DropdownMenuItem>{' '}
+                                                        </DropdownMenuItem>
                                                         <DropdownMenuItem>
                                                             <Link href={`/dashboard/questions/${question.uuid}/edit`} className="w-full">
                                                                 Edit
                                                             </Link>
                                                         </DropdownMenuItem>
-                                                        <DropdownMenuItem className="text-red-600">
-                                                            <Link href={`/dashboard/questions/${question.uuid}/delete`} className="w-full">
-                                                                Delete
-                                                            </Link>
+                                                        <DropdownMenuItem className="text-red-600" onSelect={(e) => {
+                                                            e.preventDefault();
+                                                            handleDeleteClick(question);
+                                                        }}>
+                                                            Delete
                                                         </DropdownMenuItem>
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
@@ -156,6 +209,24 @@ export default function Questions() {
                     </>
                 )}
             </div>
+
+            {/* Delete Confirmation Dialog */}
+            <AlertDialog open={deleteDialogOpen} onOpenChange={handleDialogOpenChange}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Are you sure you want to delete "{questionToDelete?.title}"? This action cannot be undone.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">
+                            Delete
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </AppLayout>
     );
 }

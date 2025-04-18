@@ -144,7 +144,18 @@ class QuestionController extends Controller
      */
     public function destroy(Question $question)
     {
-        //
+        if($question->delete()){
+            return redirect()->route('dashboard.questions.index')
+                ->with('flash', [
+                   'message' => 'Question deleted successfully',
+                    'type' =>'success'
+                ]);
+        }
+        return redirect()->back()
+                ->with('flash', [
+                   'message' => 'Question could not be deleted',
+                    'type' => 'error'       
+                ]);
     }
 
     public function search(Request $request)

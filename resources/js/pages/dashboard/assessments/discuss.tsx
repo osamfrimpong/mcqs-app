@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
 import { Question, type BreadcrumbItem } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react';
-import { Book, ArrowLeft, ArrowRight, Check } from 'lucide-react';
+import { Book, ArrowLeft, ArrowRight, Check,  Clock } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -26,6 +26,7 @@ export default function DiscussQuestion() {
     const { question } = usePage<{ question: Question }>().props;
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [showAnswersState, setShowAnswersState] = useState<Record<number, boolean>>({});
+    const [elapsedTime, setElapsedTime] = useState(0); // Time in seconds
     
     // Initialize all questions with answers hidden
     useEffect(() => {
@@ -36,13 +37,24 @@ export default function DiscussQuestion() {
         setShowAnswersState(initialState);
     }, [question]);
     
-    const formatDuration = (minutes: number): string => {
-        if (minutes >= 60) {
-            const hours = Math.floor(minutes / 60);
-            const remainingMinutes = minutes % 60;
-            return `${hours} hour${hours > 1 ? 's' : ''}${remainingMinutes > 0 ? ` ${remainingMinutes} minute${remainingMinutes > 1 ? 's' : ''}` : ''}`;
+    // Set up timer for elapsed time
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setElapsedTime(prevTime => prevTime + 1);
+        }, 1000);
+        
+        return () => clearInterval(timer);
+    }, []);
+    
+    const formatElapsedTime = (seconds: number): string => {
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        const remainingSeconds = seconds % 60;
+        
+        if (hours > 0) {
+            return `${hours}:${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
         }
-        return `${minutes} minute${minutes !== 1 ? 's' : ''}`;
+        return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
     };
     
     const renderOption = (key: string, value: string, correctAnswer: string, questionNumber: number) => {
@@ -88,7 +100,7 @@ export default function DiscussQuestion() {
                             onClick={() => currentQuestion && handleToggleAnswer(currentQuestion.number)}
                             className="flex items-center gap-2"
                         >
-                           
+                       
                             {isAnswerShown ? "Hide Answer" : "Show Answer"}
                         </Button>
                         <Link href={route('dashboard.questions.answers', question.uuid)}>
@@ -100,8 +112,9 @@ export default function DiscussQuestion() {
                     </div>
                 </div>
                 <div className="mb-6 flex items-center justify-between">
-                    <Badge variant="outline" className="text-md">
-                        Duration: {formatDuration(question.duration)}
+                    <Badge variant="outline" className="text-md flex items-center gap-2">
+                        <Clock className="h-4 w-4" />
+                        Time Spent: {formatElapsedTime(elapsedTime)}
                     </Badge>
                     <div className="text-sm">
                         Question {currentQuestionIndex + 1} of {question.content.length}
