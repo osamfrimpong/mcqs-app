@@ -44,44 +44,44 @@ class QuestionController extends Controller
         ]);
 
         // MAKE API CALL TO GOOGLE GEMINI
-        $apiKey = env('GEMINI_API_KEY');
-        $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" . $apiKey;
+        // $apiKey = env('GEMINI_API_KEY');
+        // $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" . $apiKey;
 
 
-        $prompt = 'Convert "' . $request->content . '" to a plain JSON array without any formatting as [{"number": 1, "detail": "question goes here", "options":[{"a":"xyz"}, {"b":"xyz"}, {"c":"xyz"}], "answer": "a"}]';
-        $data = [
-            'contents' => [
-                [
-                    'parts' => [
-                        [
-                            'text' => $prompt
-                        ]
-                    ]
-                ]
-            ]
-        ];
+        // $prompt = 'Convert "' . $request->content . '" to a plain JSON array without any formatting as [{"number": 1, "detail": "question goes here", "options":[{"a":"xyz"}, {"b":"xyz"}, {"c":"xyz"}], "answer": "a"}]';
+        // $data = [
+        //     'contents' => [
+        //         [
+        //             'parts' => [
+        //                 [
+        //                     'text' => $prompt
+        //                 ]
+        //             ]
+        //         ]
+        //     ]
+        // ];
 
-        $client = new Client();
+        // $client = new Client();
 
         try {
-            $response = $client->post($url, [
-                'json' => $data,
-                'headers' => [
-                    'Content-Type' => 'application/json'
-                ]
-            ]);
+            // $response = $client->post($url, [
+            //     'json' => $data,
+            //     'headers' => [
+            //         'Content-Type' => 'application/json'
+            //     ]
+            // ]);
 
-            if ($response->getStatusCode() !== 200) {
-                return redirect()->back()->withInput()->with('flash', [
-                    'message' => 'Failed to generate content',
-                    'type' => 'error'
-                ]);
-            }
+            // if ($response->getStatusCode() !== 200) {
+            //     return redirect()->back()->withInput()->with('flash', [
+            //         'message' => 'Failed to generate content',
+            //         'type' => 'error'
+            //     ]);
+            // }
 
-            $questionContent = $this->extractPlainJSON(json_decode($response->getBody(), true));
+            // $questionContent = $this->extractPlainJSON(json_decode($response->getBody(), true));
             $question = new Question();
             $question->title = $request->title;
-            $question->content = json_decode($questionContent, true);
+            $question->content = json_decode($this->parseQuestions($request->content), true);
             $question->description = $request->description;
             $question->visibility = $request->visibility;
             $question->duration = $request->duration;
@@ -96,7 +96,7 @@ class QuestionController extends Controller
             return redirect()->back()
                 ->withInput() // Preserve form data
                 ->with('flash', [
-                    'message' => 'Failed to generate content: API request failed',
+                    'message' => 'Failed to generate content.',
                     'type' => 'error'
                 ]);
         }
@@ -107,13 +107,13 @@ class QuestionController extends Controller
      */
     public function show(Question $question)
     {
-     
+
         return Inertia::render('dashboard/questions/show', ['question' => $question]);
     }
 
     public function discuss(Question $question)
     {
-     
+
         return Inertia::render('dashboard/assessments/discuss', ['question' => $question]);
     }
 
@@ -128,7 +128,7 @@ class QuestionController extends Controller
      */
     public function edit(Question $question)
     {
-        //
+        return Inertia::render('dashboard/questions/edit', ['question' => $question]);
     }
 
     /**
@@ -136,7 +136,36 @@ class QuestionController extends Controller
      */
     public function update(Request $request, Question $question)
     {
-        //
+        $request->validate([
+            'title' => 'bail|required|string',
+            'duration' => 'bail|required|integer|min:1',
+            'content' => 'bail|required|string',
+            'description' => 'bail|required|string',
+            'visibility' => 'bail|required|string|in:public,private',
+        ]);
+
+        try {
+            $question->title = $request->title;
+            $question->content = json_decode($this->parseQuestions($request->content), true);
+            $question->description = $request->description;
+            $question->visibility = $request->visibility;
+            $question->duration = $request->duration;
+            $question->user_id = Auth::id();
+            $question->save();
+            return redirect()->back()
+                ->with('flash', [
+                    'message' => 'Question updated successfully',
+                    'type' => 'success'
+                ]);
+        } catch (\GuzzleHttp\Exception\RequestException $e) {
+            return redirect()->back()
+                ->withInput() // Preserve form data
+                ->with('flash', [
+                    'message' => 'Failed to parse content.',
+                    'type' => 'error'
+                ]);
+        }
+
     }
 
     /**
@@ -144,18 +173,18 @@ class QuestionController extends Controller
      */
     public function destroy(Question $question)
     {
-        if($question->delete()){
+        if ($question->delete()) {
             return redirect()->route('dashboard.questions.index')
                 ->with('flash', [
-                   'message' => 'Question deleted successfully',
-                    'type' =>'success'
+                    'message' => 'Question deleted successfully',
+                    'type' => 'success'
                 ]);
         }
         return redirect()->back()
-                ->with('flash', [
-                   'message' => 'Question could not be deleted',
-                    'type' => 'error'       
-                ]);
+            ->with('flash', [
+                'message' => 'Question could not be deleted',
+                'type' => 'error'
+            ]);
     }
 
     public function search(Request $request)
@@ -193,5 +222,47 @@ class QuestionController extends Controller
         }
 
         return null; // Return null if the expected structure isn't found
+    }
+
+
+
+    private function parseQuestions($text)
+    {
+        $questions = [];
+        $pattern = '/(\d+)\.\s+(.*?)(?:Answer:\s+([a-d])|\z)/si';
+
+        preg_match_all($pattern, $text, $questionMatches, PREG_SET_ORDER);
+
+        foreach ($questionMatches as $questionMatch) {
+            $questionNumber = (int)$questionMatch[1];
+            $questionText = trim($questionMatch[2]);
+            $answer = isset($questionMatch[3]) ? strtolower($questionMatch[3]) : "";
+
+            // Extract options
+            $optionPattern = '/([A-D])\.\s+(.*?)(?=\s+[A-D]\.|$)/s';
+            preg_match_all($optionPattern, $questionText, $optionMatches, PREG_SET_ORDER);
+
+            // Separate question detail from options
+            $detailEndPos = strpos($questionText, 'A.');
+            $questionDetail = trim(substr($questionText, 0, $detailEndPos));
+
+            $options = [];
+            foreach ($optionMatches as $optionMatch) {
+                $optionLetter = strtolower($optionMatch[1]);
+                $optionText = trim($optionMatch[2]);
+                $options[] = [
+                    $optionLetter => $optionText
+                ];
+            }
+
+            $questions[] = [
+                "number" => $questionNumber,
+                "detail" => $questionDetail,
+                "options" => $options,
+                "answer" => $answer
+            ];
+        }
+
+        return json_encode($questions, JSON_PRETTY_PRINT);
     }
 }
