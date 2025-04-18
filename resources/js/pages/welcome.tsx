@@ -1,9 +1,15 @@
 import React from 'react';
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
+import { Auth } from '@/types';
 
 export default function Welcome() {
+
+  const { auth } = usePage<{ auth: Auth }>().props;
+
+  console.log(auth);
+
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 text-white">
       {/* Main content */}
@@ -37,11 +43,16 @@ export default function Welcome() {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            <Link href={route('login')}>
+            {auth.user ?  <Link href={route('dashboard')}>
+              <Button size="lg" className="bg-white text-purple-600 hover:bg-gray-100 text-lg font-medium px-8 py-6  shadow-lg">
+                Goto Dashboard
+              </Button>
+            </Link> :  <Link href={route('login')}>
               <Button size="lg" className="bg-white text-purple-600 hover:bg-gray-100 text-lg font-medium px-8 py-6  shadow-lg">
                 Get Started
               </Button>
-            </Link>
+            </Link>}
+           
           </motion.div>
         </motion.div>
         

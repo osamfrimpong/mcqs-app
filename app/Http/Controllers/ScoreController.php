@@ -15,7 +15,8 @@ class ScoreController extends Controller
      */
     public function index()
     {
-        return Inertia::render('dashboard/assessments/index');
+        $assessments = Score::where('user_id', Auth::id())->paginate(10);
+        return Inertia::render('dashboard/assessments/index', ['assessments' => $assessments]);
     }
 
     /**

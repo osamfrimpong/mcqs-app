@@ -8,7 +8,7 @@ import AppLogo from './app-logo';
 const mainNavItems: NavItem[] = [
     {
         title: 'Home',
-        href: route('dashboard.home'),
+        href: route('dashboard'),
         icon: LayoutGrid,
     },
     {

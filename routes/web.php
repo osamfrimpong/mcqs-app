@@ -13,15 +13,15 @@ Route::get('/', function () {
 
 
 
-Route::middleware(['auth'])->prefix('dashboard')->name('dashboard.')->group(function () {
-    Route::get('/', [DashboardController::class, 'index'])->name('home');
-    Route::post('questions/search', [QuestionController::class, 'search'])->name('questions.search');
-    Route::resource('questions', QuestionController::class);
-    Route::get('assessments', [ScoreController::class, 'index'])->name('assessments');
-    Route::post('assessments', [ScoreController::class, 'store'])->name('assessments.store');
-    Route::get('assessments/take-test/{question}', [QuestionController::class, 'takeTest'])->name('assessments.take-test');
+Route::middleware(['auth'])->prefix('dashboard')->group(function () {
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+    Route::post('questions/search', [QuestionController::class, 'search'])->name('dashboard.questions.search');
+    Route::resource('questions', QuestionController::class)->names('dashboard.questions');
+    Route::get('assessments', [ScoreController::class, 'index'])->name('dashboard.assessments');
+    Route::post('assessments', [ScoreController::class, 'store'])->name('dashboard.assessments.store');
+    Route::get('assessments/take-test/{question}', [QuestionController::class, 'takeTest'])->name('dashboard.assessments.take-test');
     Route::get('logout', [AuthenticatedSessionController::class, 'destroy'])
-    ->name('logout');
+    ->name('dashboard.logout');
 });
 
 
