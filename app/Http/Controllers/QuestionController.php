@@ -80,24 +80,24 @@ class QuestionController extends Controller
             $questionContent = $this->extractPlainJSON(json_decode($response->getBody(), true));
             $question = new Question();
             $question->title = $request->title;
-            $question->content = $questionContent;
+            $question->content = json_decode($questionContent, true);
             $question->description = $request->description;
             $question->visibility = $request->visibility;
             $question->duration = $request->duration;
             $question->user_id = Auth::id();
             $question->save();
             return redirect()->route('dashboard.questions.index')
-            ->with('flash', [
-                'message' => 'Question created successfully',
-                'type' => 'success' 
-            ]);
+                ->with('flash', [
+                    'message' => 'Question created successfully',
+                    'type' => 'success'
+                ]);
         } catch (\GuzzleHttp\Exception\RequestException $e) {
             return redirect()->back()
-            ->withInput() // Preserve form data
-            ->with('flash', [
-                'message' => 'Failed to generate content: API request failed',
-                'type' => 'error'
-            ]);
+                ->withInput() // Preserve form data
+                ->with('flash', [
+                    'message' => 'Failed to generate content: API request failed',
+                    'type' => 'error'
+                ]);
         }
     }
 
@@ -106,6 +106,7 @@ class QuestionController extends Controller
      */
     public function show(Question $question)
     {
+     
         return Inertia::render('dashboard/questions/show', ['question' => $question]);
     }
 
@@ -141,8 +142,7 @@ class QuestionController extends Controller
         $searchTerm = $request->input('uuid');
         $question = Question::with('user')->where('uuid', '=', $searchTerm)
             ->first();
-        if(is_null($question))
-        {
+        if (is_null($question)) {
             return response()->json(['message' => 'Question not found'], 404);
         }
         return response()->json($question);
@@ -155,18 +155,19 @@ class QuestionController extends Controller
     }
 
 
-    private function extractPlainJSON($responseArray) {
+    private function extractPlainJSON($responseArray)
+    {
         // Navigate through the array structure to find the text containing JSON
         if (isset($responseArray['candidates'][0]['content']['parts'][0]['text'])) {
             $rawText = $responseArray['candidates'][0]['content']['parts'][0]['text'];
-            
+
             // Extract just the JSON content by removing markdown code block syntax
             $plainJSON = preg_replace('/```json\s*([\s\S]*?)\s*```/', '$1', $rawText);
-            
+
             // Return the cleaned JSON text
             return trim($plainJSON);
         }
-        
+
         return null; // Return null if the expected structure isn't found
     }
 }
