@@ -5,10 +5,11 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem } from '@/types';
-import { Head, useForm } from '@inertiajs/react';
+import { FlashMessage, type BreadcrumbItem } from '@/types';
+import { Head, useForm, usePage } from '@inertiajs/react';
 import { LoaderCircle } from 'lucide-react';
-import { FormEventHandler } from 'react';
+import { FormEventHandler, useEffect } from 'react';
+import { toast } from 'sonner';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -34,6 +35,19 @@ type CreateQuestion = {
 };
 
 export default function CreateQuestion() {
+    const { flash, } = usePage<{ flash: FlashMessage }>().props;
+  
+
+    useEffect(() => {
+        if (flash && flash.type === 'error') {
+            toast.error('Error!', { description: flash.message });
+        }
+        if (flash && flash.type === 'success') {
+            toast.success('Success!', { description: flash.message });
+        }
+    }, [flash]);
+
+
     const { data, setData, post, processing, errors } = useForm<Required<CreateQuestion>>({
         title: '',
         duration: 0,
@@ -42,11 +56,15 @@ export default function CreateQuestion() {
         content: '',
     });
 
+
     const saveQuestion: FormEventHandler = (e) => {
         e.preventDefault();
-        console.log(data);
         post(route('dashboard.questions.store'), {
             onFinish: () => null,
+            onError: (errors) => {
+                // Show error toast
+                toast.error('Error Creating Question!', { description: errors.message });
+            },
         });
     };
 
@@ -55,7 +73,7 @@ export default function CreateQuestion() {
             <Head title="Create Question" />
             <div className="space-y-6 p-6">
                 <h1 className="text-2xl font-bold tracking-tight">Create Question</h1>
-
+                <Button onClick={() => toast.success('Hello')}>Toast</Button>
                 <form onSubmit={saveQuestion} className="space-y-6">
                     <div className="grid w-full gap-1.5">
                         <Label htmlFor="email">Title</Label>
@@ -103,7 +121,7 @@ export default function CreateQuestion() {
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="private">Private</SelectItem>
-                                <SelectItem value="public">Public</SelectItem>     
+                                <SelectItem value="public">Public</SelectItem>
                             </SelectContent>
                         </Select>
 

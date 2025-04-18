@@ -31,6 +31,11 @@ export interface SharedData {
     [key: string]: unknown;
 }
 
+export interface FlashMessage {
+    type: string;
+    message: string;
+}
+
 export interface User {
     id: number;
     name: string;
@@ -49,12 +54,20 @@ export interface Question {
     uuid: string;
     title: string;
     user: User;
-    content: Record<string, unknown>;
+    content: QuestionContent[];
     scores: Assessment[];
     description: string;
     created_at: string;
     updated_at: string;
     type: string;
+    duration: number;
+}
+
+export interface QuestionContent {
+    detail: string;
+    number: number;
+    options: Record<string, string>[];
+    answer: string;
 }
 
 

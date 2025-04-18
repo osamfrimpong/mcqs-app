@@ -11,10 +11,16 @@ class Question extends Model
 
     protected $table = 'questions';
 
+    protected $casts = [
+        'content' => 'array',
+    ];
+
     public function getRouteKeyName()
     {
         return 'uuid';
     }
+
+   
 
     public function user()
     {

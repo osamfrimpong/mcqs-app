@@ -18,7 +18,6 @@ class QuestionController extends Controller
     public function index()
     {
         $questions = Question::where('user_id', Auth::id())->paginate(10);
-        Log::info($questions);
         return Inertia::render('dashboard/questions/index', ['questions' => $questions]);
     }
 
@@ -35,21 +34,13 @@ class QuestionController extends Controller
      */
     public function store(Request $request)
     {
-        $validation = Validator::make($request->all(), [
-            'title' => 'required|string',
-            'duration' => 'required|integer',
-            'content' => 'required|string',
-            'description' => 'required|string',
-            'visibility' => 'required|string',
+        $request->validate([
+            'title' => 'bail|required|string|unique:questions,title',
+            'duration' => 'bail|required|integer|min:1',
+            'content' => 'bail|required|string',
+            'description' => 'bail|required|string',
+            'visibility' => 'bail|required|string|in:public,private',
         ]);
-
-        if ($validation->fails()) {
-            return redirect()->back()->with([
-                'message' => 'Validation failed',
-                'type' => 'error',
-                'errors' => $validation->errors()
-            ]);
-        }
 
         // MAKE API CALL TO GOOGLE GEMINI
         $apiKey = env('GEMINI_API_KEY');
@@ -80,7 +71,7 @@ class QuestionController extends Controller
             ]);
 
             if ($response->getStatusCode() !== 200) {
-                return redirect()->back()->with([
+                return redirect()->back()->withInput()->with('flash', [
                     'message' => 'Failed to generate content',
                     'type' => 'error'
                 ]);
@@ -95,13 +86,16 @@ class QuestionController extends Controller
             $question->duration = $request->duration;
             $question->user_id = Auth::id();
             $question->save();
-            return redirect()->back()->with([
-               'message' => 'Question created successfully',
+            return redirect()->route('dashboard.questions.index')
+            ->with('flash', [
+                'message' => 'Question created successfully',
                 'type' => 'success' 
             ]);
         } catch (\GuzzleHttp\Exception\RequestException $e) {
-            return redirect()->back()->with([
-                'message' => 'Failed to generate content',
+            return redirect()->back()
+            ->withInput() // Preserve form data
+            ->with('flash', [
+                'message' => 'Failed to generate content: API request failed',
                 'type' => 'error'
             ]);
         }
@@ -112,7 +106,7 @@ class QuestionController extends Controller
      */
     public function show(Question $question)
     {
-        //
+        return Inertia::render('dashboard/questions/show', ['question' => $question]);
     }
 
     /**
