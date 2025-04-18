@@ -16,6 +16,9 @@ Route::get('/', function () {
 Route::middleware(['auth'])->prefix('dashboard')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::post('questions/search', [QuestionController::class, 'search'])->name('dashboard.questions.search');
+    Route::get('questions/answers/{question}', [QuestionController::class, 'answers'])->name('dashboard.questions.answers');
+    Route::get('questions/discuss/{question}', [QuestionController::class, 'discuss'])->name('dashboard.questions.discuss');
+
     Route::resource('questions', QuestionController::class)->names('dashboard.questions');
     Route::get('assessments', [ScoreController::class, 'index'])->name('dashboard.assessments');
     Route::post('assessments', [ScoreController::class, 'store'])->name('dashboard.assessments.store');

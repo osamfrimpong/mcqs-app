@@ -136,7 +136,7 @@ export default function Dashboard() {
                               </Link>
                             </DropdownMenuItem>
                            <DropdownMenuItem>
-                              <Link href={`/dashboard/questions/${question.uuid}/answers`} className="w-full">
+                              <Link href={route('dashboard.questions.answers', question.uuid)} className="w-full">
                                 Answers/Discuss
                               </Link>
                             </DropdownMenuItem> <DropdownMenuItem>

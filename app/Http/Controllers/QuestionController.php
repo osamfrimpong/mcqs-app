@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Inertia\Inertia;
 use GuzzleHttp\Client;
 use App\Models\Question;
+use App\Models\Score;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
@@ -108,6 +109,18 @@ class QuestionController extends Controller
     {
      
         return Inertia::render('dashboard/questions/show', ['question' => $question]);
+    }
+
+    public function discuss(Question $question)
+    {
+     
+        return Inertia::render('dashboard/assessments/discuss', ['question' => $question]);
+    }
+
+    public function answers(Question $question)
+    {
+        $answers = Score::with('user')->without('question')->where('question_id', $question->id)->paginate(20);
+        return Inertia::render('dashboard/assessments/scores', ['scores' => $answers, 'question' => $question]);
     }
 
     /**
