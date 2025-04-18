@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Auth } from '@/types';
-import { Link, usePage } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import { motion } from 'framer-motion';
 
 export default function Welcome() {
@@ -9,6 +9,8 @@ export default function Welcome() {
     console.log(auth);
 
     return (
+      <>
+        <Head title='Welcome' />
         <div className="flex min-h-screen flex-col bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 text-white">
             {/* Main content */}
             <main className="flex flex-1 flex-col items-center justify-center px-4 py-12">
@@ -75,5 +77,6 @@ export default function Welcome() {
                 </div>
             </footer>
         </div>
+        </>
     );
 }
