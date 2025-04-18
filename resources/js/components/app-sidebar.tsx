@@ -55,7 +55,7 @@ export function AppSidebar() {
             <SidebarFooter>
                 <div className="text-muted-foreground text-xs">
                     <p>
-                        &copy; {new Date().getFullYear()} Built by{' '}
+                        &copy; {new Date().getFullYear()} Built with ❤️ by {" "}
                         <a href="https://github.com/osamfrimpong" className="hover:underline">
                             Osam-Frimpong
                         </a>
