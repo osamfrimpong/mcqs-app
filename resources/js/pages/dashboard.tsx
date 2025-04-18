@@ -7,7 +7,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { PlusCircle, AlertCircle, MoreHorizontal } from 'lucide-react';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
+import { useState } from 'react';
+import SearchAssessment from './dashboard/assessments/search';
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
@@ -17,12 +20,14 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function Dashboard() {
+  const { auth, assessments, questions } = usePage<PageProps & {
+    assessments: Assessment[];
+    questions: Question[];
+  }>().props;
 
-const { auth, assessments, questions } = usePage<PageProps & {
-  assessments: Assessment[];
-  questions: Question[];
-}>().props;
-
+  // State for controlling the take assessment dialog
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [assessmentId, setAssessmentId] = useState('');
 
   const getGreeting = (): string => {
     const currentHour = new Date().getHours();
@@ -30,6 +35,8 @@ const { auth, assessments, questions } = usePage<PageProps & {
     if (currentHour < 18) return 'Good afternoon';
     return 'Good evening';
   };
+
+ 
 
   return (
     <AppLayout breadcrumbs={breadcrumbs}>
@@ -73,11 +80,9 @@ const { auth, assessments, questions } = usePage<PageProps & {
               <AlertDescription>
                 You haven't taken any assessments yet. Take your first assessment.
                 <div className="mt-4">
-                  <Button asChild>
-                    <Link href="/assessments/create">
-                      <PlusCircle className="mr-2 h-4 w-4" />
-                      Take Assessment
-                    </Link>
+                  <Button onClick={() => setIsModalOpen(true)}>
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Take Assessment
                   </Button>
                 </div>
               </AlertDescription>
@@ -182,33 +187,22 @@ const { auth, assessments, questions } = usePage<PageProps & {
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
-                {/* <TableBody>
-                  {assessments.slice(0, 5).map((assessment) => (
-                    <TableRow key={assessment.id}>
-                      <TableCell className="font-medium">{assessment.title}</TableCell>
-                      <TableCell>{assessment.questions_count}</TableCell>
-                      <TableCell>
-                        <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                          ${assessment.status === 'published' 
-                              ? 'bg-green-100 text-green-800' 
-                              : 'bg-yellow-100 text-yellow-800'}`}>
-                          {assessment.status === 'published' ? 'Published' : 'Draft'}
-                        </div>
-                      </TableCell>
-                      <TableCell>{formatDistance(new Date(assessment.created_at), new Date(), { addSuffix: true })}</TableCell>
-                      <TableCell className="text-right">
-                        <Button asChild variant="ghost" size="sm">
-                          <Link href={`/assessments/${assessment.id}`}>View</Link>
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody> */}
+                {/* Table body content would go here */}
               </Table>
             </CardContent>
           </Card>
         )}
       </div>
+
+      {/* Take Assessment Dialog Modal */}
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="sm:max-w-md" >
+          <DialogHeader>
+            <DialogTitle>Take Assessment</DialogTitle>
+          </DialogHeader>
+          <SearchAssessment assessmentId={assessmentId} setAssessmentId={setAssessmentId} />
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 }

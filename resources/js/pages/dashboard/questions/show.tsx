@@ -71,7 +71,7 @@ export default function ShowQuestion() {
 
         <div className="mb-6">
           <p className="text-gray-700 mb-2">{question.description}</p>
-          <Badge variant="outline" className="text-sm">
+          <Badge variant="outline" className="text-md">
             Duration: {formatDuration(question.duration)}
           </Badge>
         </div>

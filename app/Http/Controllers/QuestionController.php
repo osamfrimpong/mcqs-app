@@ -133,6 +133,23 @@ class QuestionController extends Controller
         //
     }
 
+    public function search(Request $request)
+    {
+        $request->validate([
+            'uuid' => 'bail|required|string',
+        ]);
+        $searchTerm = $request->input('uuid');
+        $question = Question::with('user')->where('uuid', '=', $searchTerm)
+            ->first();
+        return response()->json($question);
+    }
+
+
+    public function takeTest(Question $question)
+    {
+        return Inertia::render('dashboard/assessments/answer', ['question' => $question]);
+    }
+
 
     private function extractPlainJSON($responseArray) {
         // Navigate through the array structure to find the text containing JSON
